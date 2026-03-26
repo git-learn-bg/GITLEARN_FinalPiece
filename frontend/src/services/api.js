@@ -1,8 +1,6 @@
 import axios from 'axios'
 
-// Use VITE_API_URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL
-
 const api = axios.create({ baseURL: API_URL })
 
 export const searchRepos  = (q, lang = '', page = 1) =>
@@ -46,3 +44,11 @@ export const getLocalCompetitions = () =>
 
 export const getGlobalCompetitions = () =>
   api.get('/competitions/global').then(r => r.data)
+
+export const getRecommendedRepos = (page = 1) =>
+  api.get('/repos/recommended', { params: { page } }).then(r => r.data)
+```
+
+And remember your Vercel env var should be:
+```
+VITE_API_URL = https://your-app-name.onrender.com/api
