@@ -1,9 +1,13 @@
 #!/bin/bash
+
 echo ""
 echo "╔══════════════════════════════════════════╗"
 echo "║         GitLearn AI Platform             ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
+
+# Ensure script runs from its own directory
+cd "$(dirname "$0")"
 
 # Create .env if missing
 if [ ! -f "backend/.env" ]; then
@@ -16,39 +20,49 @@ fi
 if [ ! -d "backend/venv" ]; then
     echo "[INFO] Creating Python virtual environment..."
     python3 -m venv backend/venv
-    echo "[INFO] Installing Python dependencies..."
-    source backend/venv/bin/activate
-    pip install -r backend/requirements.txt -q
-else
-    source backend/venv/bin/activate
 fi
+
+echo "[INFO] Activating virtual environment..."
+source backend/venv/bin/activate
+
+echo "[INFO] Installing Python dependencies..."
+pip install -r backend/requirements.txt
 
 # Node deps
 if [ ! -d "frontend/node_modules" ]; then
     echo "[INFO] Installing Node dependencies..."
-    (cd frontend && npm install --silent)
+    (cd frontend && npm install)
 fi
 
-# Start backend
-echo "[OK] Starting backend on http://localhost:8000"
-(cd backend && python -m uvicorn main:app --reload --port 8000) &
+# Start backend (in background)
+echo "[OK] Starting backend on http://localhost:8888"
+(
+  cd backend
+  source venv/bin/activate
+  python -m uvicorn main:app --reload --port 8888 --host 127.0.0.1
+) &
 BACKEND_PID=$!
 
 sleep 2
 
-# Start frontend
+# Start frontend (in background)
 echo "[OK] Starting frontend on http://localhost:3000"
-(cd frontend && npm run dev) &
+(
+  cd frontend
+  npm run dev
+) &
 FRONTEND_PID=$!
 
 echo ""
 echo "════════════════════════════════════════════"
 echo " Frontend:  http://localhost:3000"
-echo " Backend:   http://localhost:8000"
-echo " API Docs:  http://localhost:8000/docs"
+echo " Backend:   http://localhost:8888"
+echo " API Docs:  http://localhost:8888/docs"
 echo "════════════════════════════════════════════"
 echo ""
 echo "Press Ctrl+C to stop both servers."
 
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; echo 'Stopped.'" EXIT
+# Proper shutdown
+trap "echo 'Stopping...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT
+
 wait

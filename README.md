@@ -40,9 +40,15 @@ gitlearn-app/
 - Anthropic API key → https://console.anthropic.com/
 - GitHub Personal Access Token (optional, but removes rate limits) → https://github.com/settings/tokens
 
-## Setup
+### Setup
 
-### 1. Backend
+## 1. AUTOMATIC
+
+- run start.bat (or start.sh on Linux)
+
+## 2. Manual
+
+# Backend
 
 ```bash
 cd gitlearn-app/backend
@@ -56,17 +62,14 @@ pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
-# Edit .env and add your keys:
-#   ANTHROPIC_API_KEY=sk-ant-api03-...
-#   GITHUB_TOKEN=ghp_...        (optional but recommended)
 
 # Start the server
-bash start.sh
-# → API running at http://localhost:8000
-# → Docs at http://localhost:8000/docs
+uvicorn main:app --reload --host 0.0.0.0 --port 8888
+# → API running at http://localhost:8888
+# → Docs at http://localhost:8888/docs
 ```
 
-### 2. Frontend
+# Frontend
 
 ```bash
 cd gitlearn-app/frontend
@@ -91,44 +94,6 @@ Open **http://localhost:3000** in your browser.
 | 📝 **Quiz** | 8 context-aware multiple-choice questions with explanations |
 | 💻 **Practice** | 7 coding exercises (Easy → Medium → Hard) with hints & solutions |
 
-## API Endpoints
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/api/search?q=...&lang=...` | Search GitHub repositories |
-| GET | `/api/repo/{owner}/{repo}/readme` | Fetch README content |
-| GET | `/api/repo/{owner}/{repo}/tree` | Get file tree |
-| GET | `/api/repo/{owner}/{repo}/file?path=...` | Get file content |
-| POST | `/api/generate/learn` | Generate learning course (AI) |
-| POST | `/api/generate/quiz` | Generate quiz questions (AI) |
-| POST | `/api/generate/practice` | Generate coding exercises (AI) |
-
-## Routes
-
-| Path | Description |
-|------|-------------|
-| `/` | Home — search and repo cards |
-| `/learn/:owner/:repo` | Full course page |
-| `/quiz/:owner/:repo` | Quiz page |
-| `/practice/:owner/:repo` | Practice exercises |
-
-## Environment Variables
-
-```env
-ANTHROPIC_API_KEY=sk-ant-api03-...   # Required for AI generation
-GITHUB_TOKEN=ghp_...                  # Optional — increases rate limit from 60 to 5000 req/hr
-```
-
-## Production Build
-
-```bash
-# Build frontend
-cd frontend && npm run build
-
-# Serve static files from FastAPI
-# Copy the contents of dist/ to a static hosting service
-# or configure FastAPI to serve them
-```
 
 ## Notes
 
