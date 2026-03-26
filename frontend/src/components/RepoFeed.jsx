@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RepoCard from './RepoCard';
+import { getRecommendedRepos } from '../services/api';  // ← use shared axios instance
 
 export default function RepoFeed({ hideHeader = false, onClick }) {
   const [repos, setRepos] = useState([]);
@@ -11,30 +12,21 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
     let active = true;
 
     async function fetchRepos() {
-      // Prevent duplicate loading
       if (loading || !hasMore) return;
-      
+
       try {
         setLoading(true);
-        const res = await fetch(`/api/repos/recommended?page=${page}`);
-        
-        if (!res.ok) throw new Error('Network response was not ok');
-        
-        const data = await res.json();
+        const data = await getRecommendedRepos(page);  // ← was: raw fetch('/api/repos/recommended?page=...')
         const newItems = data.items || [];
-        
+
         if (active) {
-          // If less than 20 items returned, we assume no more pages
           if (newItems.length < 20) {
             setHasMore(false);
           }
-          
-          // Append new repos to existing list
+
           setRepos(prev => {
-            // Filter out any potential duplicates by ID
             const existingIds = new Set(prev.map(r => r.id));
             const uniqueNewItems = newItems.filter(item => !existingIds.has(item.id));
-            
             return page === 1 ? uniqueNewItems : [...prev, ...uniqueNewItems];
           });
         }
@@ -49,11 +41,10 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
 
     fetchRepos();
 
-    // Cleanup to prevent setting state on unmounted component
     return () => {
       active = false;
     };
-  }, [page]); // Runs whenever 'page' changes
+  }, [page]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
@@ -74,7 +65,6 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
         </>
       )}
 
-      {/* Grid Layout */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
@@ -82,7 +72,7 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
         marginBottom: '32px'
       }}>
         {repos.map((repo) => (
-          <RepoCard 
+          <RepoCard
             key={repo.id}
             repo={{
                id: repo.id,
@@ -94,12 +84,11 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
                forks: repo.forks,
                language: repo.language,
                html_url: repo.url
-            }} 
+            }}
             onClick={onClick}
           />
         ))}
 
-        {/* Skeleton loading placeholders initially or on first load */}
         {loading && page === 1 && Array.from({ length: 6 }).map((_, i) => (
           <div key={`loading-${i}`} style={{
             height: '160px',
@@ -111,10 +100,9 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
         ))}
       </div>
 
-      {/* Load More Button */}
       {hasMore && repos.length > 0 && (
         <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <button 
+          <button
             onClick={handleLoadMore}
             disabled={loading}
             style={{
@@ -134,7 +122,6 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
           >
             {loading ? (
               <>
-                {/* Simple CSS Spinner */}
                 <div style={{
                   width: '16px',
                   height: '16px',
@@ -151,14 +138,13 @@ export default function RepoFeed({ hideHeader = false, onClick }) {
           </button>
         </div>
       )}
-      
+
       {!hasMore && repos.length > 0 && (
         <p style={{ textAlign: 'center', color: 'var(--text3)', marginTop: '24px' }}>
           No more repositories to show.
         </p>
       )}
 
-      {/* Define the spin animation if it doesn't already exist globally */}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
