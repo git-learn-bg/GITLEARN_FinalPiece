@@ -60,7 +60,7 @@ function ContentBlock({ block }) {
       return (
         <div style={{ margin:'18px 0' }}>
           {block.heading && (
-            <p style={{ fontSize:13, fontWeight:700, color:'var(--text)', fontFamily:'var(--mono)', marginBottom:10, textTransform:'uppercase', letterSpacing:'.5px', color:'var(--accent)' }}>
+            <p style={{ fontSize:13, fontWeight:700, fontFamily:'var(--mono)', marginBottom:10, textTransform:'uppercase', letterSpacing:'.5px', color:'var(--accent)' }}>
               {block.heading}
             </p>
           )}
